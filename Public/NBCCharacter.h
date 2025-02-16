@@ -8,6 +8,7 @@
 
 class USpringArmComponent;
 class UCameraComponent;
+class UWidgetComponent;
 struct  FInputActionValue;
 
 UCLASS()
@@ -22,6 +23,9 @@ public:
 	USpringArmComponent* SpringArmComp;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	UWidgetComponent* OverHeadWidget;
 
 protected:
 	float NoramalSpeed;
@@ -64,4 +68,5 @@ public:
 	void AddHealth(float Amount);
 
 	void OnDeath();
+	void UpdateOverHeadHP();
 };

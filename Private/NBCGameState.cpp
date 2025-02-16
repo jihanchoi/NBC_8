@@ -192,6 +192,7 @@ void ANBCGameState::OnGameOver()
 		if (ANBCPlayerController* NBCPlayerController = Cast<ANBCPlayerController>(PlayerController))
 		{
 			NBCPlayerController->ShowMainMenu(true);
+			NBCPlayerController->SetPause(true);
 		}
 	}
 }

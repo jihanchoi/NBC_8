@@ -4,9 +4,12 @@
 #include "NBCCharacter.h"
 #include "EnhancedInputComponent.h"
 #include "NBCPlayerController.h"
+#include "NBCGameState.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/WidgetComponent.h"
+#include "Components/TextBlock.h"
 
 ANBCCharacter::ANBCCharacter()
 {
@@ -21,6 +24,10 @@ ANBCCharacter::ANBCCharacter()
 	CameraComp->SetupAttachment(SpringArmComp, USpringArmComponent::SocketName);
 	CameraComp->bUsePawnControlRotation = false;
 
+	OverHeadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverHeadWidget"));
+	OverHeadWidget->SetupAttachment(GetMesh());
+	OverHeadWidget->SetWidgetSpace(EWidgetSpace::Screen);
+
 	NoramalSpeed = 600.0f;
 	SprintSpeedMultiplier = 1.5f;
 	SprintSpeed = NoramalSpeed * SprintSpeedMultiplier;
@@ -34,6 +41,7 @@ ANBCCharacter::ANBCCharacter()
 void ANBCCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	UpdateOverHeadHP();
 }
 
 void ANBCCharacter::Tick(float DeltaTime)
@@ -162,6 +170,7 @@ float ANBCCharacter::GetMaxHelath() const
 void ANBCCharacter::AddHealth(float Amount)
 {
 	Health = FMath::Clamp(Health + Amount, 0.0f, MaxHealth);
+	UpdateOverHeadHP();
 }
 
 float ANBCCharacter::TakeDamage(
@@ -173,6 +182,7 @@ float ANBCCharacter::TakeDamage(
 	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	Health = FMath::Clamp(Health - DamageAmount, 0.0f, MaxHealth);
+	UpdateOverHeadHP();
 
 	if (Health < 0.0f)
 	{
@@ -184,5 +194,22 @@ float ANBCCharacter::TakeDamage(
 
 void ANBCCharacter::OnDeath()
 {
+	ANBCGameState* NBCGameState = GetWorld() ? GetWorld()->GetGameState<ANBCGameState>() : nullptr;
+	if (NBCGameState)
+	{
+		NBCGameState->OnGameOver();
+	}
+}
 
+void ANBCCharacter::UpdateOverHeadHP()
+{
+	if (!OverHeadWidget) return;
+
+	UUserWidget* OverHeadWidgetInstance = OverHeadWidget->GetUserWidgetObject();
+	if (!OverHeadWidgetInstance) return;
+
+	if (UTextBlock* HPText = Cast<UTextBlock>(OverHeadWidgetInstance->GetWidgetFromName(TEXT("OverHeadHP"))))
+	{
+		HPText->SetText(FText::FromString(FString::Printf(TEXT("%.0f/%.0f"), Health, MaxHealth)));
+	}
 }

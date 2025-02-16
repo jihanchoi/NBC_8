@@ -11,15 +11,16 @@
 
 ANBCPlayerController::ANBCPlayerController()
 	:InputMappingContext(nullptr),
-	 MoveAction(nullptr),
-	 JumpAction(nullptr),
-	 LookAction(nullptr),
-	 SprintAction(nullptr),
-	 HUDWidgetClass(nullptr),
-	 HUDWidgetInstance(nullptr),
-	 NBCCharacterInstansce(nullptr),
-	 MainMenuWidgetClass(nullptr),
-	 MainMenuWidgetInstance(nullptr) {}
+	MoveAction(nullptr),
+	JumpAction(nullptr),
+	LookAction(nullptr),
+	SprintAction(nullptr),
+	HUDWidgetClass(nullptr),
+	HUDWidgetInstance(nullptr),
+	NBCCharacterInstansce(nullptr),
+	MainMenuWidgetClass(nullptr),
+	MainMenuWidgetInstance(nullptr) {
+}
 
 void ANBCPlayerController::BeginPlay()
 {
@@ -89,6 +90,23 @@ void ANBCPlayerController::ShowMainMenu(bool bIsRestart)
 				ButtonText->SetText(FText::FromString(TEXT("START")));
 			}
 		}
+
+		if (bIsRestart)
+		{
+			UFunction* PlayAnimFunc = MainMenuWidgetInstance->FindFunction(FName("PlayGameOverAnim"));
+			if (PlayAnimFunc)
+			{
+				MainMenuWidgetInstance->ProcessEvent(PlayAnimFunc, nullptr);
+			}
+
+			if (UTextBlock* TotalScoreText = Cast<UTextBlock>(MainMenuWidgetInstance->GetWidgetFromName("TotalScore")))
+			{
+				if (UNBCGameInstance* NBCGameInstance = Cast<UNBCGameInstance>(UGameplayStatics::GetGameInstance(this)))
+				{
+					TotalScoreText->SetText(FText::FromString(FString::Printf(TEXT("Total Score : %d"), NBCGameInstance->TotalScore)));
+				}
+			}
+		}
 	}
 }
 
@@ -135,4 +153,5 @@ void ANBCPlayerController::StartGame()
 	}
 
 	UGameplayStatics::OpenLevel(GetWorld(), FName("BasicLevel"));
+	SetPause(false);
 }
